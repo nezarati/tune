@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,20 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0b0e14">
 <title>Tune — Chromatic Tuner · Pitch Monitor · Metronome</title>
-<meta name="description" content="Free professional chromatic tuner, vocal pitch monitor, metronome and tone generator in a single HTML file. Sub-cent accuracy, strobe & clock dial, temperaments, tap tempo. Works offline - no install, no signup, audio never leaves your device.">
-<link rel="canonical" href="https://nezarati.github.io/tune/">
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2034%2034'%3E%3Ccircle%20cx='17'%20cy='17'%20r='15'%20fill='%230b0e14'%20stroke='%2338bdf8'%20stroke-width='2.5'/%3E%3Cpath%20d='M17%2017L23.5%2010.5'%20stroke='%2334d399'%20stroke-width='2.6'%20stroke-linecap='round'/%3E%3Ccircle%20cx='17'%20cy='17'%20r='2.2'%20fill='%2338bdf8'/%3E%3C/svg%3E">
-<meta property="og:title" content="Tune - Tuner | Pitch Monitor | Metronome">
-<meta property="og:description" content="Pro chromatic tuner with strobe & clock dial, vocal pitch monitor with lockable zoom window, vibrato analysis and a sing-along vocal coach. One tiny HTML file - free, offline, private.">
-<meta property="og:url" content="https://nezarati.github.io/tune/">
-<meta property="og:image" content="https://nezarati.github.io/tune/preview.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="600">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Tune - Tuner | Pitch Monitor | Metronome">
-<meta name="twitter:description" content="Pro chromatic tuner, vocal pitch monitor with sing-along coach, metronome and tone generator in one HTML file. Free, offline, privacy-first.">
-<meta name="twitter:image" content="https://nezarati.github.io/tune/preview.png">
 <style>
   :root{
     --bg:#0b0e14; --bg2:#0f1420; --panel:#141a26; --panel2:#1a2233; --line:#232c40;
@@ -86,6 +73,7 @@
   }
   .chip:hover{color:var(--txt);border-color:#3a4763}
   .chip.sel{background:rgba(56,189,248,.14);border-color:var(--acc);color:var(--acc)}
+  .chip.dis{opacity:.32;pointer-events:none}
   .chip.string{font-family:var(--mono);font-size:12px;padding:6px 11px}
   .chip.string .f{color:var(--faint);font-weight:400;margin-left:4px;font-size:10.5px}
   .chip.string.target{border-color:#3a4763;color:var(--txt)}
@@ -330,6 +318,21 @@
             <button class="chip" data-inst="ukulele">Ukulele</button>
             <button class="chip" data-inst="violin">Violin</button>
           </div>
+          <div class="row" style="margin-top:10px;row-gap:8px">
+            <div class="ctl"><label>Flat tuning</label>
+              <select id="flatSel">
+                <option value="0" selected>Standard</option><option value="1">♭ (1 flat)</option>
+                <option value="2">♭♭ (2)</option><option value="3">♭♭♭ (3)</option>
+                <option value="4">♭♭♭♭ (4)</option>
+              </select></div>
+            <div class="ctl"><label>Capo</label>
+              <select id="capoSel">
+                <option value="0" selected>No capo</option><option value="1">Capo 1</option><option value="2">Capo 2</option>
+                <option value="3">Capo 3</option><option value="4">Capo 4</option><option value="5">Capo 5</option>
+                <option value="6">Capo 6</option><option value="7">Capo 7</option>
+              </select></div>
+            <span class="hint" style="align-self:flex-end">Like hardware Guitar/Bass modes: shifts displayed note names for drop/flat tunings &amp; capo.</span>
+          </div>
           <div class="strings" id="stringChips"></div>
           <div class="hint" style="margin-top:8px">In instrument mode the tuner snaps to the nearest string and shows which one you're playing.</div>
         </div>
@@ -338,7 +341,12 @@
           <div class="sett-grid">
             <div class="ctl">
               <label>A4 Reference — <span class="val" id="a4Val">440.0 Hz</span></label>
-              <input type="range" id="a4Range" min="380" max="480" step="0.1" value="440">
+              <div class="row tight">
+                <button class="btn sm icon" id="a4Dn" title="Down by calibration step">−</button>
+                <input type="range" id="a4Range" min="380" max="480" step="0.1" value="440" style="flex:1">
+                <button class="btn sm icon" id="a4Up" title="Up by calibration step">+</button>
+              </div>
+              <div class="hint" id="calibHint" style="margin-top:4px"></div>
               <div class="a4-quick">
                 <button class="chip" data-a4="415">415</button><button class="chip" data-a4="432">432</button>
                 <button class="chip sel" data-a4="440">440</button><button class="chip" data-a4="442">442</button>
@@ -359,6 +367,20 @@
                 <option value="5">G instruments (+5)</option>
               </select>
               <div class="hint">Displays written pitch for transposing instruments.</div>
+            </div>
+            <div class="ctl">
+              <label>Calibration profile (hardware)</label>
+              <select id="calibSel"></select>
+              <div class="hint">A4 range &amp; step of real hardware tuners — e.g. Snark starts at 415 Hz.</div>
+            </div>
+            <div class="ctl">
+              <label>Needle response</label>
+              <select id="respSel">
+                <option value="slow">Slow (damped)</option>
+                <option value="med" selected>Medium</option>
+                <option value="fast">Fast (twitchy)</option>
+              </select>
+              <div class="hint">How quickly the needle follows your pitch.</div>
             </div>
             <div class="ctl">
               <label>Note style</label>
@@ -669,6 +691,7 @@ const S = {
   instrument: 'chromatic', displayMode: 'clock',
   monRange: 'auto',
   mon: null, haptics: false, guides: [], showCentLines: true,
+  calib: 'custom', flat: 0, capo: 0, resp: 'med',
   sa: null,
   bpm: 120, sig: '4/4', sub: 1, sound: 'click', volume: 80, accent: true, countIn: false,
   ramp: { on: false, bars: 4, step: 4, end: 180 },
@@ -706,7 +729,7 @@ function freqToNote(f) {
   return best; // {midi, cents, tf}
 }
 function noteName(midi) {
-  const dm = midi + S.transpose;
+  const dm = midi + (S.transpose | 0) + (S.flat | 0) - (S.capo | 0);
   const pc = ((dm % 12) + 12) % 12;
   const oct = Math.floor(dm / 12) - 1;
   const s = NOTE_SHARP[pc] + oct, fl = NOTE_FLAT[pc] + oct;
@@ -968,7 +991,8 @@ function drawTuner(dt) {
   if (pitch.valid && tgt) targetPos = Math.max(-SENS * 1.15, Math.min(SENS * 1.15, tgt.cents));
   else needle.vel *= 0.9;
   if (!pitch.valid) targetPos = needle.pos * 0.86; // drift to center when lost
-  const k = 260, damp = 26;
+  const SPR = { slow: { k: 150, d: 32 }, med: { k: 260, d: 26 }, fast: { k: 430, d: 19 } }[S.resp] || { k: 260, d: 26 };
+  const k = SPR.k, damp = SPR.d;
   needle.vel += ((targetPos - needle.pos) * k - needle.vel * damp) * Math.min(dt, 0.05);
   needle.pos += needle.vel * Math.min(dt, 0.05);
 
@@ -1109,7 +1133,7 @@ function currentTarget() {
   if (!inst) return pitch.note;
   let best = null;
   for (const s of inst) {
-    const tf = temperedFreq(s.m);
+    const tf = temperedFreq(s.m - (S.flat | 0));
     const c = 1200 * Math.log2(pitch.freq / tf);
     if (!best || Math.abs(c) < Math.abs(best.cents)) best = { midi: s.m, cents: c, tf };
   }
@@ -1180,9 +1204,9 @@ function buildStrings() {
   for (const s of inst) {
     const b = document.createElement('button');
     b.className = 'chip string'; b.dataset.midi = s.m;
-    const nm = noteName(s.m);
-    b.innerHTML = nm.main + ' <span class="f">' + prettyFreq(temperedFreq(s.m)) + 'Hz</span>';
-    b.addEventListener('click', () => switchTone(s.m % 12, Math.floor(s.m / 12) - 1));
+    const nm = noteName(s.m), sm = s.m - (S.flat | 0);
+    b.innerHTML = nm.main + ' <span class="f">' + prettyFreq(temperedFreq(sm)) + 'Hz</span>';
+    b.addEventListener('click', () => switchTone(((sm % 12) + 12) % 12, Math.floor(sm / 12) - 1));
     stringChips.appendChild(b);
   }
 }
@@ -1214,12 +1238,40 @@ document.querySelectorAll('#instChips .chip').forEach(b => b.addEventListener('c
 
 /* -------- settings -------- */
 const a4Range = document.getElementById('a4Range'), a4Val = document.getElementById('a4Val');
-function applyA4(v, fromChip) {
-  S.a4 = v; a4Range.value = v; a4Val.textContent = (+v).toFixed(1) + ' Hz';
-  document.querySelectorAll('.a4-quick .chip').forEach(c => c.classList.toggle('sel', +c.dataset.a4 === +v));
+/* hardware-tuner calibration profiles: name, A4 range, step */
+const CALIB = {
+  custom:   { name: 'Custom / full range (380\u2013480, 0.1 Hz)', lo: 380, hi: 480, step: 0.1 },
+  snark:    { name: 'Snark SN-1 / SN-2 / SN1X (415\u2013466, 1 Hz)', lo: 415, hi: 466, step: 1 },
+  nsmicro:  { name: 'D\u2019Addario NS Micro (410\u2013480, 1 Hz)', lo: 410, hi: 480, step: 1 },
+  korg:     { name: 'Korg CA-2 / pitchblack (410\u2013480, 1 Hz)', lo: 410, hi: 480, step: 1 },
+  boss:     { name: 'Boss TU-3 (436\u2013445, 1 Hz)', lo: 436, hi: 445, step: 1 },
+  peterson: { name: 'Peterson-style strobe (400\u2013480, 0.1 Hz)', lo: 400, hi: 480, step: 0.1 },
+};
+function calibProfile() { return CALIB[S.calib] || CALIB.custom; }
+function applyA4(v) {
+  const p = calibProfile();
+  let x = Math.min(p.hi, Math.max(p.lo, +v || p.lo));
+  x = + (Math.round(x / p.step) * p.step).toFixed(2);
+  S.a4 = x; a4Range.value = x; a4Val.textContent = x.toFixed(1) + ' Hz';
+  document.querySelectorAll('.a4-quick .chip').forEach(c => {
+    const inR = +c.dataset.a4 >= p.lo && +c.dataset.a4 <= p.hi;
+    c.classList.toggle('dis', !inR);
+    c.classList.toggle('sel', +c.dataset.a4 === x);
+  });
   save(); buildStrings(); updateTGDisplay();
 }
+function setCalib(key) {
+  S.calib = CALIB[key] ? key : 'custom';
+  const p = calibProfile();
+  a4Range.min = p.lo; a4Range.max = p.hi; a4Range.step = p.step;
+  calibSel.value = S.calib;
+  document.getElementById('calibHint').textContent = 'Range ' + p.lo + '\u2013' + p.hi + ' Hz \u00B7 step ' + p.step + ' Hz';
+  applyA4(S.a4);
+  save();
+}
 a4Range.addEventListener('input', () => applyA4(+a4Range.value));
+document.getElementById('a4Up').addEventListener('click', () => applyA4(S.a4 + calibProfile().step));
+document.getElementById('a4Dn').addEventListener('click', () => applyA4(S.a4 - calibProfile().step));
 document.querySelectorAll('.a4-quick .chip').forEach(c => c.addEventListener('click', () => applyA4(+c.dataset.a4, true)));
 
 const tempSel = document.getElementById('tempSel');
@@ -1230,6 +1282,12 @@ tempSel.addEventListener('change', () => {
   S.temperament = tempSel.value; save(); buildStrings();
   document.getElementById('tempHint').textContent = TEMPERAMENTS[S.temperament].hint;
 });
+const calibSel = document.getElementById('calibSel');
+for (const k in CALIB) { const o = document.createElement('option'); o.value = k; o.textContent = CALIB[k].name; calibSel.appendChild(o); }
+calibSel.addEventListener('change', () => setCalib(calibSel.value));
+document.getElementById('respSel').addEventListener('change', e => { S.resp = e.target.value; save(); });
+document.getElementById('flatSel').addEventListener('change', e => { S.flat = +e.target.value; save(); buildStrings(); });
+document.getElementById('capoSel').addEventListener('change', e => { S.capo = +e.target.value; save(); buildStrings(); });
 const transSel = document.getElementById('transSel');
 transSel.addEventListener('change', () => { S.transpose = +transSel.value; save(); buildStrings(); updateTGDisplay(); });
 document.getElementById('nameSel').addEventListener('change', e => { S.nameStyle = e.target.value; save(); buildStrings(); });
@@ -1243,6 +1301,10 @@ function syncSettingsUI() {
   transSel.value = String(S.transpose);
   document.getElementById('nameSel').value = S.nameStyle;
   document.getElementById('sensSel').value = String(S.sensitivity);
+  document.getElementById('respSel').value = S.resp || 'med';
+  document.getElementById('flatSel').value = String(S.flat | 0);
+  document.getElementById('capoSel').value = String(S.capo | 0);
+  setCalib(S.calib || 'custom');
   document.querySelectorAll('#instChips .chip').forEach(x => x.classList.toggle('sel', x.dataset.inst === S.instrument));
 }
 
