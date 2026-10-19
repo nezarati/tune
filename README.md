@@ -34,7 +34,9 @@ The metronome delivers sample-accurate timing across eleven time signatures, sub
 - 5-harmonic **strobe display** mode (bars drift left = flat, right = sharp, still = perfect)
 - Live readouts: detected Hz, target Hz, cents offset, sharp/flat verdict
 - Input **level** and **clarity** meters
-- **A4 reference**: 380–480 Hz slider + quick presets (415, 432, 440, 442, 466)
+- **Hardware-style calibration profiles**, like real clip-on/pedal tuners: **Snark SN-1/SN-2/SN1X (415–466 Hz, 1 Hz steps — yes, exactly 416 works)**, **D'Addario NS Micro (410–480)**, **Korg CA-2/pitchblack (410–480)**, **Boss TU-3 (436–445)**, **Peterson-style strobe (400–480, 0.1 Hz)**, or full **Custom 380–480 @ 0.1 Hz** — with −/+ step buttons and out-of-range presets auto-disabled
+- **A4 reference**: profile-aware slider + quick presets (415, 432, 440, 442, 466)
+- **Flat & capo modes** (up to 4 flats / capo 7) shift displayed note names like hardware Guitar/Bass modes, and **needle response** is selectable (slow / medium / fast)
 - **Temperaments**: Equal (12-TET), Just Intonation, Pythagorean, ¼-comma Meantone, Werckmeister III, Vallotti
 - **Transposition**: Concert, B♭, E♭, F, A, D, G instruments (shows written pitch)
 - Note naming: sharps, flats, or both · needle sensitivity ±20 / ±35 / ±50 cents
