@@ -85,29 +85,6 @@ The metronome delivers sample-accurate timing across eleven time signatures, sub
 
 ---
 
-## 🚀 Publishing to GitHub Pages (~2 minutes)
-
-**Option A — no git needed (web upload):**
-1. On github.com click **+ → New repository**, name it `tune`, make it **Public**, click *Create repository*.
-2. On the empty repo page click **uploading an existing file** and drag in the files from this folder: `index.html`, `preview.png`, `README.md`, `LICENSE`.
-3. Commit to the `main` branch.
-4. Go to **Settings → Pages**, set *Source* to **Deploy from a branch**, *Branch* to **main** and folder to **/ (root)**, then **Save**.
-5. After ~30 seconds your site is live at `https://nezarati.github.io/tune/` 🎉
-   (Optionally replace `nezarati` in this README and add an absolute `og:url` in `index.html` for perfect link previews.)
-
-**Option B — git command line:**
-```bash
-cd tune
-git init -b main && git add -A
-git commit -m "Tune: tuner + pitch monitor + metronome in one HTML file"
-git remote add origin https://github.com/nezarati/tune.git
-git push -u origin main
-```
-Then finish with steps 4–5 above.
-
-> Note: `index.html` is the app itself (identical to `tune.html` plus SEO/social-preview meta tags). GitHub Pages serves it directly — no build step, no dependencies.
-
----
 
 ## Mobile Ready 📱
 
